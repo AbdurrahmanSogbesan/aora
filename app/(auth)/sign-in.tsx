@@ -21,7 +21,7 @@ const SignIn = () => {
     setIsSubmitting(true);
     const { email, password } = form;
     try {
-      await signIn(email, password);
+      await signIn(email.trim(), password);
 
       const result = await getCurrentUser();
 

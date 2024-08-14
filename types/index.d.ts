@@ -14,7 +14,7 @@ export type Video = {
   thumbnail: string;
   prompt: string;
   video: string;
-  user: User;
+  creator: User;
 };
 
 export type AppwriteVideo = Models.Document & Video;

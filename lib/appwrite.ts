@@ -1,4 +1,4 @@
-import { AppwriteUser } from "@/types";
+import { AppwriteUser, AppwriteVideo } from "@/types";
 import {
   Account,
   Avatars,
@@ -18,16 +18,23 @@ export const config = {
   storageId: "files",
 };
 
+const {
+  endpoint,
+  platform,
+  projectId,
+  databaseId,
+  userCollectionId,
+  videoCollectionId,
+  storageId,
+} = config;
+
 // Init your React Native SDK
 const client = new Client();
 const account = new Account(client);
 const avatars = new Avatars(client);
 const databases = new Databases(client);
 
-client
-  .setEndpoint(config.endpoint)
-  .setProject(config.projectId)
-  .setPlatform(config.platform);
+client.setEndpoint(endpoint).setProject(projectId).setPlatform(platform);
 
 // Functions to interact with Appwrite
 export async function createUser(
@@ -45,8 +52,8 @@ export async function createUser(
     await signIn(email, password);
 
     const newUser = await databases.createDocument(
-      config.databaseId,
-      config.userCollectionId,
+      databaseId,
+      userCollectionId,
       ID.unique(),
       {
         accountId: newAcc.$id,
@@ -86,13 +93,51 @@ export async function getCurrentUser() {
     if (!currentAccount) throw Error;
 
     const currentUser = await databases.listDocuments(
-      config.databaseId,
-      config.userCollectionId,
+      databaseId,
+      userCollectionId,
       [Query.equal("accountId", currentAccount.$id)]
     );
     if (!currentUser) throw Error;
 
     return currentUser.documents[0] as AppwriteUser;
+  } catch (error: any) {
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export async function getPosts() {
+  try {
+    const posts = await databases.listDocuments(databaseId, videoCollectionId);
+
+    return posts.documents as AppwriteVideo[];
+  } catch (error: any) {
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export async function getLatestPosts() {
+  try {
+    const posts = await databases.listDocuments(databaseId, videoCollectionId, [
+      Query.orderDesc("$createdAt"),
+      Query.limit(7),
+    ]);
+
+    return posts.documents as AppwriteVideo[];
+  } catch (error: any) {
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export async function searchPosts(query: string) {
+  try {
+    const posts = await databases.listDocuments(databaseId, videoCollectionId, [
+      Query.search("title", query),
+    ]);
+
+    return posts.documents as AppwriteVideo[];
   } catch (error: any) {
     console.log(error);
     throw new Error(error);
