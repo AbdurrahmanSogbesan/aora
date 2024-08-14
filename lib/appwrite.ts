@@ -76,7 +76,7 @@ export async function signIn(email: string, password: string) {
     try {
       await account.get();
       // logout
-      await account.deleteSession("current");
+      await signOut();
       return await account.createEmailPasswordSession(email, password);
     } catch (error) {
       return await account.createEmailPasswordSession(email, password);
@@ -138,6 +138,29 @@ export async function searchPosts(query: string) {
     ]);
 
     return posts.documents as AppwriteVideo[];
+  } catch (error: any) {
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export async function getUserPosts(userId: string) {
+  try {
+    const posts = await databases.listDocuments(databaseId, videoCollectionId, [
+      Query.equal("creator", userId),
+    ]);
+
+    return posts.documents as AppwriteVideo[];
+  } catch (error: any) {
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export async function signOut() {
+  try {
+    const session = await account.deleteSession("current");
+    return session;
   } catch (error: any) {
     console.log(error);
     throw new Error(error);

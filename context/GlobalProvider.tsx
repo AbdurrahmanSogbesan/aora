@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/lib/appwrite";
-import { AppwriteUser, User } from "@/types";
+import { AppwriteUser } from "@/types";
 import {
   createContext,
   ReactNode,
@@ -11,7 +11,7 @@ import {
 interface GlobalContextProps {
   isLoggedIn: boolean;
   setIsLoggedIn: (value: boolean) => void;
-  user: User | null;
+  user: AppwriteUser | null;
   setUser: (value: AppwriteUser | null) => void;
   isLoading: boolean;
 }
@@ -28,7 +28,7 @@ export const useGlobalContext = () => useContext(GlobalContext);
 
 const GlobalProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppwriteUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

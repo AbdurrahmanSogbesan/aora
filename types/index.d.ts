@@ -7,7 +7,7 @@ export type User = {
   accountId: string;
 };
 
-export type AppwriteUser = AppwriteUser;
+export type AppwriteUser = Models.Document & User;
 
 export type Video = {
   title: string;
