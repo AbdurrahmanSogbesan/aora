@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import React, { memo, useState } from "react";
 import { AppwriteVideo } from "@/types";
 import icons from "@/constants/icons";
 import { ResizeMode, Video } from "expo-av";
@@ -88,4 +88,4 @@ const VideoCard = ({
   );
 };
 
-export default VideoCard;
+export default memo(VideoCard);

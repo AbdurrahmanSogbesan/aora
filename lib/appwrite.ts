@@ -1,11 +1,14 @@
-import { AppwriteUser, AppwriteVideo } from "@/types";
+import { AppwriteUser, AppwriteVideo, TForm } from "@/types";
+import { DocumentPickerAsset } from "expo-document-picker";
 import {
   Account,
   Avatars,
   Client,
   Databases,
   ID,
+  ImageGravity,
   Query,
+  Storage,
 } from "react-native-appwrite";
 
 export const config = {
@@ -33,6 +36,7 @@ const client = new Client();
 const account = new Account(client);
 const avatars = new Avatars(client);
 const databases = new Databases(client);
+const storage = new Storage(client);
 
 client.setEndpoint(endpoint).setProject(projectId).setPlatform(platform);
 
@@ -161,6 +165,85 @@ export async function signOut() {
   try {
     const session = await account.deleteSession("current");
     return session;
+  } catch (error: any) {
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export async function getFilePreview(fileId: string, type: "image" | "video") {
+  let fileUrl;
+  try {
+    if (type === "video") {
+      fileUrl = storage.getFileView(storageId, fileId);
+    } else if (type === "image") {
+      fileUrl = storage.getFilePreview(
+        storageId,
+        fileId,
+        2000,
+        2000,
+        ImageGravity.Top,
+        100
+      );
+    } else {
+      throw new Error("Invalid file type");
+    }
+
+    if (!fileUrl) throw Error;
+
+    return fileUrl;
+  } catch (error: any) {
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export async function uploadFile(
+  file: DocumentPickerAsset,
+  type: "image" | "video"
+) {
+  if (!file) return;
+  const { name, mimeType, size, uri } = file;
+
+  try {
+    const uploadedFile = await storage.createFile(storageId, ID.unique(), {
+      name,
+      uri,
+      type: mimeType as string,
+      size: size as number,
+    });
+
+    const fileUrl = await getFilePreview(uploadedFile.$id, type);
+    return fileUrl;
+  } catch (error: any) {
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export async function createVideo(form: TForm & { userId: string }) {
+  try {
+    const [thumbnailUrl, videoUrl] = await Promise.all([
+      uploadFile(form.thumbnail, "image"),
+      uploadFile(form.video, "video"),
+    ]);
+
+    const { title, prompt, userId } = form;
+
+    const newPost = await databases.createDocument(
+      databaseId,
+      videoCollectionId,
+      ID.unique(),
+      {
+        title,
+        video: videoUrl,
+        thumbnail: thumbnailUrl,
+        prompt,
+        creator: userId,
+      }
+    );
+
+    return newPost as AppwriteVideo;
   } catch (error: any) {
     console.log(error);
     throw new Error(error);

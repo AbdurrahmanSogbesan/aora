@@ -18,3 +18,10 @@ export type Video = {
 };
 
 export type AppwriteVideo = Models.Document & Video;
+
+export type TForm = {
+  title: string;
+  video: DocumentPicker.DocumentPickerAsset | null;
+  thumbnail: DocumentPicker.DocumentPickerAsset | null;
+  prompt: string;
+};
