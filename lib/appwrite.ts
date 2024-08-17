@@ -1,5 +1,5 @@
 import { AppwriteUser, AppwriteVideo, TForm } from "@/types";
-import { DocumentPickerAsset } from "expo-document-picker";
+import { ImagePickerAsset } from "expo-image-picker";
 import {
   Account,
   Avatars,
@@ -60,7 +60,7 @@ export async function createUser(
       userCollectionId,
       ID.unique(),
       {
-        accountId: newAcc.$id,
+        accountId: newAcc?.$id,
         email,
         username,
         avatar: avatarUrl,
@@ -99,7 +99,7 @@ export async function getCurrentUser() {
     const currentUser = await databases.listDocuments(
       databaseId,
       userCollectionId,
-      [Query.equal("accountId", currentAccount.$id)]
+      [Query.equal("accountId", currentAccount?.$id)]
     );
     if (!currentUser) throw Error;
 
@@ -112,7 +112,9 @@ export async function getCurrentUser() {
 
 export async function getPosts() {
   try {
-    const posts = await databases.listDocuments(databaseId, videoCollectionId);
+    const posts = await databases.listDocuments(databaseId, videoCollectionId, [
+      Query.orderDesc("$createdAt"),
+    ]);
 
     return posts.documents as AppwriteVideo[];
   } catch (error: any) {
@@ -152,6 +154,7 @@ export async function getUserPosts(userId: string) {
   try {
     const posts = await databases.listDocuments(databaseId, videoCollectionId, [
       Query.equal("creator", userId),
+      Query.orderDesc("$createdAt"),
     ]);
 
     return posts.documents as AppwriteVideo[];
@@ -199,21 +202,23 @@ export async function getFilePreview(fileId: string, type: "image" | "video") {
 }
 
 export async function uploadFile(
-  file: DocumentPickerAsset,
+  file: ImagePickerAsset,
   type: "image" | "video"
 ) {
   if (!file) return;
-  const { name, mimeType, size, uri } = file;
+  const { fileName, mimeType, fileSize, uri } = file;
 
   try {
     const uploadedFile = await storage.createFile(storageId, ID.unique(), {
-      name,
+      name: fileName as string,
       uri,
       type: mimeType as string,
-      size: size as number,
+      size: fileSize as number,
     });
 
-    const fileUrl = await getFilePreview(uploadedFile.$id, type);
+    console.log("uploadedFile", uploadedFile);
+
+    const fileUrl = await getFilePreview(uploadedFile?.$id, type);
     return fileUrl;
   } catch (error: any) {
     console.log(error);
@@ -224,8 +229,8 @@ export async function uploadFile(
 export async function createVideo(form: TForm & { userId: string }) {
   try {
     const [thumbnailUrl, videoUrl] = await Promise.all([
-      uploadFile(form.thumbnail, "image"),
-      uploadFile(form.video, "video"),
+      uploadFile(form.thumbnail!, "image"),
+      uploadFile(form.video!, "video"),
     ]);
 
     const { title, prompt, userId } = form;

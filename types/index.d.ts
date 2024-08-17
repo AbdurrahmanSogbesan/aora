@@ -1,3 +1,4 @@
+import { ImagePickerAsset } from "expo-image-picker";
 import { Models } from "react-native-appwrite";
 
 export type User = {
@@ -5,6 +6,7 @@ export type User = {
   email: string;
   avatar: string;
   accountId: string;
+  liked_videos: Video[];
 };
 
 export type AppwriteUser = Models.Document & User;
@@ -15,13 +17,14 @@ export type Video = {
   prompt: string;
   video: string;
   creator: User;
+  likes: User[];
 };
 
 export type AppwriteVideo = Models.Document & Video;
 
 export type TForm = {
   title: string;
-  video: DocumentPicker.DocumentPickerAsset | null;
-  thumbnail: DocumentPicker.DocumentPickerAsset | null;
+  video: ImagePickerAsset | null;
+  thumbnail: ImagePickerAsset | null;
   prompt: string;
 };
