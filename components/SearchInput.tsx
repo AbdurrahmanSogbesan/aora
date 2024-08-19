@@ -9,6 +9,7 @@ interface SearchInputProps {
 
 const SearchInput = ({
   initialQuery,
+  ...props
 }: SearchInputProps & ComponentProps<typeof TextInput>) => {
   const pathName = usePathname();
   const [query, setQuery] = useState(initialQuery || "");
@@ -18,7 +19,7 @@ const SearchInput = ({
       <TextInput
         className="text-base mt-0.5 text-white flex-1 font-pregular"
         value={query}
-        placeholder="Search for a video topic"
+        placeholder={props.placeholder || "Search for a video topic"}
         placeholderTextColor="#cdcde0"
         onChangeText={(e) => setQuery(e)}
       />

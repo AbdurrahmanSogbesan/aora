@@ -1,11 +1,14 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
 import React, { memo, useState } from "react";
 import { AppwriteVideo } from "@/types";
 import icons from "@/constants/icons";
 import { ResizeMode, Video } from "expo-av";
+import { useGlobalContext } from "@/context/GlobalProvider";
+import { likeVideo, unlikeVideo } from "@/lib/appwrite";
 
 interface VideoCardProps {
   video: AppwriteVideo;
+  hideBookmark?: boolean;
 }
 
 const VideoCard = ({
@@ -14,9 +17,38 @@ const VideoCard = ({
     thumbnail,
     video,
     creator: { username, avatar },
+    likes,
+    $id: videoId,
   },
+  hideBookmark,
 }: VideoCardProps) => {
+  const { user } = useGlobalContext();
   const [play, setPlay] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
+  const [localLikes, setLocalLikes] = useState(likes);
+
+  const isLiked = localLikes.some((likedUser) => likedUser.$id === user?.$id);
+
+  const handleLike = async () => {
+    if (!user) return;
+
+    setIsLiking(true);
+    const newLikes = isLiked
+      ? localLikes.filter((like) => like.$id !== user.$id)
+      : [...localLikes, user];
+
+    setLocalLikes(newLikes);
+
+    try {
+      await (isLiked ? unlikeVideo : likeVideo)(videoId, user.$id);
+    } catch (error) {
+      console.error("Error toggling like:", error);
+      setLocalLikes(localLikes); // Revert on error
+      Alert.alert("Error", "Failed to update like status. Please try again.");
+    } finally {
+      setIsLiking(false);
+    }
+  };
 
   return (
     <View className="flex-col items-center px-4 mb-14">
@@ -45,9 +77,21 @@ const VideoCard = ({
           </View>
         </View>
 
-        <View className="pt-2">
-          <Image source={icons.menu} className="w-5 h-5" resizeMode="contain" />
-        </View>
+        {!hideBookmark && (
+          <TouchableOpacity
+            className="pt-2"
+            onPress={handleLike}
+            disabled={isLiking}
+            activeOpacity={0.7}
+          >
+            <Image
+              source={icons.bookmark}
+              className="w-5 h-5"
+              resizeMode="contain"
+              tintColor={isLiked ? "#FFA001" : "#CDCDE0"}
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
       {play ? (

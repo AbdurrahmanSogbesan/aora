@@ -254,3 +254,55 @@ export async function createVideo(form: TForm & { userId: string }) {
     throw new Error(error);
   }
 }
+
+export async function likeVideo(videoId: string, userId: string) {
+  try {
+    const video = (await databases.getDocument(
+      databaseId,
+      videoCollectionId,
+      videoId
+    )) as AppwriteVideo;
+
+    const updatedLikes = [...video.likes, userId];
+
+    const updatedVideo = await databases.updateDocument(
+      databaseId,
+      videoCollectionId,
+      videoId,
+      {
+        likes: updatedLikes,
+      }
+    );
+
+    return updatedVideo as AppwriteVideo;
+  } catch (error: any) {
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export async function unlikeVideo(videoId: string, userId: string) {
+  try {
+    const video = (await databases.getDocument(
+      databaseId,
+      videoCollectionId,
+      videoId
+    )) as AppwriteVideo;
+
+    const updatedLikes = video.likes.filter((like) => like.$id !== userId);
+
+    const updatedVideo = await databases.updateDocument(
+      databaseId,
+      videoCollectionId,
+      videoId,
+      {
+        likes: updatedLikes,
+      }
+    );
+
+    return updatedVideo as AppwriteVideo;
+  } catch (error: any) {
+    console.log(error);
+    throw new Error(error);
+  }
+}

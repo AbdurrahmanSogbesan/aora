@@ -29,7 +29,7 @@ const Profile = () => {
       <FlatList
         data={posts}
         keyExtractor={(item) => item?.$id}
-        renderItem={({ item }) => <VideoCard video={item} />}
+        renderItem={({ item }) => <VideoCard video={item} hideBookmark />}
         ListHeaderComponent={() => (
           <View className="w-full justify-center items-center mt-6 mb-12 px-4">
             <TouchableOpacity

@@ -82,6 +82,7 @@ const Home = () => {
             tintColor={"#fff"}
           />
         }
+        initialNumToRender={7}
       />
     </SafeAreaView>
   );

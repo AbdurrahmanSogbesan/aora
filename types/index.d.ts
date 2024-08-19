@@ -17,7 +17,7 @@ export type Video = {
   prompt: string;
   video: string;
   creator: User;
-  likes: User[];
+  likes: AppwriteUser[];
 };
 
 export type AppwriteVideo = Models.Document & Video;
