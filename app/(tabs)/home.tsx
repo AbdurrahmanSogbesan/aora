@@ -25,13 +25,13 @@ const Home = () => {
     await refetch();
     setRefreshing(false);
   };
+
   return (
     <SafeAreaView className="bg-primary h-full">
       <FlatList
         data={posts}
         keyExtractor={(item) => item?.$id}
         renderItem={({ item }) => <VideoCard video={item} />}
-        initialNumToRender={8}
         ListHeaderComponent={() => (
           <View className="my-6 px-4 space-y-6">
             <View className="justify-between items-start flex-row mb-6">
@@ -59,7 +59,13 @@ const Home = () => {
                 Latest Videos
               </Text>
 
-              <Trending posts={latestPosts ?? []} />
+              {latestPosts && latestPosts.length > 0 ? (
+                <Trending posts={latestPosts} />
+              ) : (
+                <Text className="text-gray-300 text-center">
+                  No videos available
+                </Text>
+              )}
             </View>
           </View>
         )}
